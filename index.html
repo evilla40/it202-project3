@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <title>Project 3</title>
+    </head>
+    <body>
+        <canvas id="c1" width="400" height="400">
+             This will be displayed if your browser doesn't
+             support the canvas element.
+        </canvas>
+        <script>
+            let canvas = document.querySelector("#c1");
+            let canvas_context = canvas.getContext("2d");
+            let player = {x:10, y:390};
+            character_move = function() {
+                
+            }
+            harm_falling = function() {
+                
+            }
+            
+            const draw = () => {
+                canvas_context.clearRect(0, 0, canvas.width, canvas.height);
+                canvas_context.beginPath();
+                canvas_context.rect(player["x"], player["y"], 10, 410);
+                canvas_context.closePath();
+                canvas_context.fill();
+                window.requestAnimationFrame(draw);
+            }
+            const movePlayer = () => {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key == "ArrowRight") {
+                        player["x"] += 2;
+                    }
+                    if (e.key == "ArrowLeft") {
+                        player["x"] -= 2;
+                    }
+                })
+            }
+            movePlayer();
+            draw();
+        </script>
+    </body>
+</html>
