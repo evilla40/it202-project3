@@ -14,28 +14,45 @@
             let canvas = document.querySelector("#c1");
             let canvas_context = canvas.getContext("2d");
             let player = {x:10, y:390};
-            character_move = function() {
-                
-            }
-            harm_falling = function() {
-                
-            }
-            
+            let benefit_arr = [{x:390, y:10}];
+            let harm_arr = [{x:10, y:10}];
+            let count = 0;
+            let max = 400;
+            let speed = 150;
+
             const draw = () => {
                 canvas_context.clearRect(0, 0, canvas.width, canvas.height);
                 canvas_context.beginPath();
-                canvas_context.rect(player["x"], player["y"], 10, 410);
+                //Player
+                canvas_context.rect(player["x"], player["y"], 10, 10);
+                //Harm objects
+                for(let i = 0; i < harm_arr.length; ++i) {
+                    canvas_context.rect(harm_arr[i]["x"], harm_arr[i]["y"], 10, 10);
+                    harm_arr[i]["y"] += 1;
+                    
+                }
+                //Benefit objects
+                /*for(let i = 0; i < benefit_arr[i].length; ++i) {
+                    canvas_context.rect(benefit_arr[i]["x"], benefit_arr[i]["y"], 10, 10);
+                    benefit_arr[i]["y"] += 1;
+                }*/
                 canvas_context.closePath();
                 canvas_context.fill();
+                count += 1;
+                if (count % speed == 0) {
+                    harm_arr.push({x:Math.floor(Math.random() * max), y:10});
+                    //benefit_arr.push({x:Math.floor(Math.random() * max), y:10});
+                    speed -= 1;
+                }
                 window.requestAnimationFrame(draw);
             }
             const movePlayer = () => {
                 document.addEventListener('keydown', (e) => {
                     if (e.key == "ArrowRight") {
-                        player["x"] += 2;
+                        player["x"] += 3;
                     }
                     if (e.key == "ArrowLeft") {
-                        player["x"] -= 2;
+                        player["x"] -= 3;
                     }
                 })
             }
