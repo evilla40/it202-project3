@@ -4,11 +4,36 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <title>Project 3</title>
-        
+        <style>
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                left: 50%;
+                top: 50%;
+                margin-right: -50%;
+                transform: translate(-50%, -50%);
+                text-align:center;
+                padding:25rem;
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            }
+            .p {
+                
+            }
+        </style>
     </head>
     <body style="height:100%; margin:0rem">
         <div style="text-align:center; width:100%; height:100%;">
             <canvas id="c1"></canvas>
+        </div>
+        <div id="myModal" class="modal">
+            <h1>Game Over</h1>
+            <h3>Sources:</h3>
+            <p>Background: <a href="https://i.pinimg.com/originals/e9/30/05/e93005f53e3d83298b6d7d1299f03a35.jpg">https://i.pinimg.com/originals/e9/30/05/e93005f53e3d83298b6d7d1299f03a35.jpg</a></p>
+            <p>Controllable Character:</p>
+            <p>Blue Bows: <a href="https://www.hiclipart.com/free-transparent-background-png-clipart-ivibi">https://www.hiclipart.com/free-transparent-background-png-clipart-ivibi</a></p>
+            <p>Skulls: <a href="http://clipart-library.com/clipart/1529020.htm">http://clipart-library.com/clipart/1529020.htm</a></p>
+            <p>Purple Hearts: <a href="https://clipart.info/purple-heart-emoji-png-8460">https://clipart.info/purple-heart-emoji-png-8460</a></p>
         </div>
         <script>
             let canvas = document.querySelector("#c1");
@@ -17,17 +42,21 @@
             let canvas_context = canvas.getContext("2d");
             let player = {x:canvas.width*0.025, y:canvas.height};
             let benefit_arr = [{x:10, y:10}];
+            let harm_arr = [{x:canvas.width*0.5, y:10}]
+            let lives = 1;
             let count = 0;
             let speed = 150;
             let imgL = new Image();
             let imgR = new Image();
             let background = new Image();
             let img_benefit = new Image();
+            let img_harm = new Image();
             let heart = new Image();
             imgL.src = "/img/sylveon_left.png";
             imgR.src = "/img/sylveon_right.png";
             background.src = "/img/background.jpg";
             img_benefit.src = "/img/bow.png";
+            img_harm.src = "/img/skull.png"
             heart.src = "/img/purple_heart.png";
             
             imgR.width = canvas.width*0.02 * (imgR.naturalWidth*0.01);
@@ -35,7 +64,7 @@
             imgL.width = canvas.width*0.02 * (imgL.naturalWidth*0.01);
             imgL.height = canvas.width*0.02 * (imgL.naturalHeight*0.01);
             benefit_dim = canvas.width*0.07;
-            heart_dim = canvas.width*0.07;
+            heart_dim = canvas.width*0.03;
             
             let img = imgR;
             let str = "Points: ";
@@ -61,22 +90,45 @@
                         }
                         benefit_arr.pop();
                     }
+                }
+                //Harm objects
+                for(let i = 0; i < harm_arr.length; ++i) {
+                    canvas_context.drawImage(img_harm, harm_arr[i]["x"], harm_arr[i]["y"], benefit_dim, benefit_dim);
+                    harm_arr[i]["y"] += 1;
                     
+                    if (((harm_arr[i]["x"] > player["x"]) || ((harm_arr[i]["x"] + benefit_dim) > player["x"])) && (harm_arr[i]["x"] < (player["x"]+img.width))
+                       && (harm_arr[i]["y"] < player["y"]) && ((harm_arr[i]["y"] + benefit_dim) > (player["y"] - img.height))) {
+                        lives -= 1;
+                        for (let j = i; j < (harm_arr.length - 1); ++j) {
+                            harm_arr[j] = harm_arr[j+1];
+                        }
+                        harm_arr.pop();
+                    } 
                 }
                 //Points
                 let newStr = str + points.toString();
                 canvas_context.font = "bold 1rem sans-serif"
                 canvas_context.fillText(newStr, canvas.width*0.9, canvas.height*0.1);
                 //Heart lives
-                canvas_context.drawImage(heart, canvas.width*0.9, canvas.height*0.2, heart_dim, heart_dim);
+                for (let i = 0; i < lives; ++i) {
+                    canvas_context.drawImage(heart, canvas.width*(0.95 - (0.03*i)), canvas.height*0.125, heart_dim, heart_dim);
+                }
                 canvas_context.closePath();
                 canvas_context.fill();
+                //Speed up and create more benefit and harm objects
                 count += 1;
                 if (count % speed == 0) {
-                    benefit_arr.push({x:Math.floor(Math.random() * canvas.width), y:10});
+                    benefit_arr.push({x:Math.floor(Math.random() * (canvas.width - benefit_dim)), y:10});
+                    harm_arr.push({x:Math.floor(Math.random() * (canvas.width - benefit_dim)), y:10});
                     speed -= 1;
                 }
-                window.requestAnimationFrame(draw);
+                if (lives > 0) {
+                    window.requestAnimationFrame(draw);
+                }
+                else {
+                    let modal = document.getElementById("myModal");
+                    modal.style.display = "block";
+                }
             }
             const movePlayer = () => {
                 document.addEventListener('keydown', (e) => {
