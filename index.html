@@ -1,47 +1,79 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="en" style="height:100%">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <title>Project 3</title>
+        
     </head>
-    <body>
-        <canvas id="c1" width="400" height="400">
-             This will be displayed if your browser doesn't
-             support the canvas element.
-        </canvas>
+    <body style="height:100%; margin:0rem">
+        <div style="text-align:center; width:100%; height:100%;">
+            <canvas id="c1"></canvas>
+        </div>
         <script>
             let canvas = document.querySelector("#c1");
+            canvas.width = document.querySelector("div").offsetWidth;
+            canvas.height = document.querySelector("div").offsetHeight;
             let canvas_context = canvas.getContext("2d");
-            let player = {x:10, y:390};
-            let benefit_arr = [{x:390, y:10}];
-            let harm_arr = [{x:10, y:10}];
+            let player = {x:canvas.width*0.025, y:canvas.height};
+            let benefit_arr = [{x:10, y:10}];
             let count = 0;
-            let max = 400;
             let speed = 150;
+            let imgL = new Image();
+            let imgR = new Image();
+            let background = new Image();
+            let img_benefit = new Image();
+            let heart = new Image();
+            imgL.src = "/img/sylveon_left.png";
+            imgR.src = "/img/sylveon_right.png";
+            background.src = "/img/background.jpg";
+            img_benefit.src = "/img/bow.png";
+            heart.src = "/img/purple_heart.png";
+            
+            imgR.width = canvas.width*0.02 * (imgR.naturalWidth*0.01);
+            imgR.height = canvas.width*0.02 * (imgR.naturalHeight*0.01);
+            imgL.width = canvas.width*0.02 * (imgL.naturalWidth*0.01);
+            imgL.height = canvas.width*0.02 * (imgL.naturalHeight*0.01);
+            benefit_dim = canvas.width*0.07;
+            heart_dim = canvas.width*0.07;
+            
+            let img = imgR;
+            let str = "Points: ";
+            let points = 0;
+            
 
             const draw = () => {
                 canvas_context.clearRect(0, 0, canvas.width, canvas.height);
                 canvas_context.beginPath();
-                //Player
-                canvas_context.rect(player["x"], player["y"], 10, 10);
-                //Harm objects
-                for(let i = 0; i < harm_arr.length; ++i) {
-                    canvas_context.rect(harm_arr[i]["x"], harm_arr[i]["y"], 10, 10);
-                    harm_arr[i]["y"] += 1;
+                //Draw background and player
+                canvas_context.drawImage(background, 0, 0, canvas.width, canvas.height);
+                canvas_context.drawImage(img, player["x"], player["y"] - img.height, img.width, img.height);
+                //Benefit objects
+                for(let i = 0; i < benefit_arr.length; ++i) {
+                    canvas_context.drawImage(img_benefit, benefit_arr[i]["x"], benefit_arr[i]["y"], benefit_dim, benefit_dim);
+                    benefit_arr[i]["y"] += 1;
+                    
+                    if (((benefit_arr[i]["x"] > player["x"]) || ((benefit_arr[i]["x"] + benefit_dim) > player["x"])) && (benefit_arr[i]["x"] < (player["x"]+img.width))
+                       && (benefit_arr[i]["y"] < player["y"]) && ((benefit_arr[i]["y"] + benefit_dim) > (player["y"] - img.height))) {
+                        points += 1;
+                        for (let j = i; j < (benefit_arr.length - 1); ++j) {
+                            benefit_arr[j] = benefit_arr[j+1];
+                        }
+                        benefit_arr.pop();
+                    }
                     
                 }
-                //Benefit objects
-                /*for(let i = 0; i < benefit_arr[i].length; ++i) {
-                    canvas_context.rect(benefit_arr[i]["x"], benefit_arr[i]["y"], 10, 10);
-                    benefit_arr[i]["y"] += 1;
-                }*/
+                //Points
+                let newStr = str + points.toString();
+                canvas_context.font = "bold 1rem sans-serif"
+                canvas_context.fillText(newStr, canvas.width*0.9, canvas.height*0.1);
+                //Heart lives
+                canvas_context.drawImage(heart, canvas.width*0.9, canvas.height*0.2, heart_dim, heart_dim);
                 canvas_context.closePath();
                 canvas_context.fill();
                 count += 1;
                 if (count % speed == 0) {
-                    harm_arr.push({x:Math.floor(Math.random() * max), y:10});
-                    //benefit_arr.push({x:Math.floor(Math.random() * max), y:10});
+                    benefit_arr.push({x:Math.floor(Math.random() * canvas.width), y:10});
                     speed -= 1;
                 }
                 window.requestAnimationFrame(draw);
@@ -49,10 +81,12 @@
             const movePlayer = () => {
                 document.addEventListener('keydown', (e) => {
                     if (e.key == "ArrowRight") {
-                        player["x"] += 3;
+                        player["x"] += canvas.width*0.01;
+                        img = imgR;
                     }
                     if (e.key == "ArrowLeft") {
-                        player["x"] -= 3;
+                        player["x"] -= canvas.width*0.01;
+                        img = imgL;
                     }
                 })
             }
