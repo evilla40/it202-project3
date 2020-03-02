@@ -5,35 +5,43 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <title>Project 3</title>
         <style>
-            .modal {
-                display: none; /* Hidden by default */
-                position: fixed; /* Stay in place */
-                left: 50%;
-                top: 50%;
-                margin-right: -50%;
-                transform: translate(-50%, -50%);
-                text-align:center;
-                padding:25rem;
+            .box {
+                display: none;
+                padding:10rem;
                 overflow: auto; /* Enable scroll if needed */
                 background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+                text-shadow:
+                -1px -1px 0 #FFF,
+                1px -1px 0 #FFF,
+                -1px 1px 0 #FFF,
+                1px 1px 0 #FFF;
             }
-            .p {
-                
+            .center {
+                font:1rem sans-serif;
+                position: fixed;
+                top:50%; left:50%; margin-right: -50%;
+                transform: translate(-50%, -50%);
+                text-align:center;
             }
         </style>
     </head>
-    <body style="height:100%; margin:0rem">
+    <body style="height:100%; margin:0rem; background-color:black">
+        <p class="center" style="color:white; padding:10%">In this side-scrolling game, you play as a Pokemon, Sylveon.
+        Your goal is to collect as many bows as possible, collecting points, while avoiding the skulls that take away your lives.
+        Press the left and right arrows to move around.  The game is over when you lose all your hearts.
+        Press the up arrow to start the game.</p>
         <div style="text-align:center; width:100%; height:100%;">
             <canvas id="c1"></canvas>
         </div>
-        <div id="myModal" class="modal">
-            <h1>Game Over</h1>
+        <div class="box center">
+            <img src="/img/game_over.png" width=40% height=40%>
             <h3>Sources:</h3>
-            <p>Background: <a href="https://i.pinimg.com/originals/e9/30/05/e93005f53e3d83298b6d7d1299f03a35.jpg">https://i.pinimg.com/originals/e9/30/05/e93005f53e3d83298b6d7d1299f03a35.jpg</a></p>
-            <p>Controllable Character:</p>
-            <p>Blue Bows: <a href="https://www.hiclipart.com/free-transparent-background-png-clipart-ivibi">https://www.hiclipart.com/free-transparent-background-png-clipart-ivibi</a></p>
-            <p>Skulls: <a href="http://clipart-library.com/clipart/1529020.htm">http://clipart-library.com/clipart/1529020.htm</a></p>
-            <p>Purple Hearts: <a href="https://clipart.info/purple-heart-emoji-png-8460">https://clipart.info/purple-heart-emoji-png-8460</a></p>
+            <p>Background: <a href="https://picserio.com/cotton-candy-wallpaper/3337147.html">https://picserio.com/cotton-candy-wallpaper/3337147.html</a>
+            <br>Controllable Character:
+            <br>Blue Bows: <a href="https://www.hiclipart.com/free-transparent-background-png-clipart-ivibi">https://www.hiclipart.com/free-transparent-background-png-clipart-ivibi</a>
+            <br>Skulls: <a href="http://clipart-library.com/clipart/1529020.htm">http://clipart-library.com/clipart/1529020.htm</a>
+            <br>Purple Hearts: <a href="https://clipart.info/purple-heart-emoji-png-8460">https://clipart.info/purple-heart-emoji-png-8460</a>
+            <br>Game Over Text: <a href="http://pngimg.com/download/83375">http://pngimg.com/download/83375</a></p>
         </div>
         <script>
             let canvas = document.querySelector("#c1");
@@ -41,9 +49,9 @@
             canvas.height = document.querySelector("div").offsetHeight;
             let canvas_context = canvas.getContext("2d");
             let player = {x:canvas.width*0.025, y:canvas.height};
-            let benefit_arr = [{x:10, y:10}];
-            let harm_arr = [{x:canvas.width*0.5, y:10}]
-            let lives = 1;
+            let benefit_arr = [{x:canvas.width*0.5, y:10}];
+            let harm_arr = [{x:10, y:10}]
+            let lives = 5;
             let count = 0;
             let speed = 150;
             let imgL = new Image();
@@ -96,8 +104,8 @@
                     canvas_context.drawImage(img_harm, harm_arr[i]["x"], harm_arr[i]["y"], benefit_dim, benefit_dim);
                     harm_arr[i]["y"] += 1;
                     
-                    if (((harm_arr[i]["x"] > player["x"]) || ((harm_arr[i]["x"] + benefit_dim) > player["x"])) && (harm_arr[i]["x"] < (player["x"]+img.width))
-                       && (harm_arr[i]["y"] < player["y"]) && ((harm_arr[i]["y"] + benefit_dim) > (player["y"] - img.height))) {
+                    if (((harm_arr[i]["x"] > player["x"]) || (harm_arr[i]["x"] > player["x"])) && (harm_arr[i]["x"] < (player["x"]+img.width))
+                       && (harm_arr[i]["y"] < player["y"]) && ((harm_arr[i]["y"]) > (player["y"] - img.height))) {
                         lives -= 1;
                         for (let j = i; j < (harm_arr.length - 1); ++j) {
                             harm_arr[j] = harm_arr[j+1];
@@ -126,8 +134,8 @@
                     window.requestAnimationFrame(draw);
                 }
                 else {
-                    let modal = document.getElementById("myModal");
-                    modal.style.display = "block";
+                    let box = document.querySelector(".box");
+                    box.style.display = "block";
                 }
             }
             const movePlayer = () => {
@@ -135,15 +143,25 @@
                     if (e.key == "ArrowRight") {
                         player["x"] += canvas.width*0.01;
                         img = imgR;
+                        console.log("R")
                     }
                     if (e.key == "ArrowLeft") {
                         player["x"] -= canvas.width*0.01;
                         img = imgL;
+                        console.log("L")
                     }
                 })
             }
-            movePlayer();
-            draw();
+            document.addEventListener('keydown', (ev) => {
+                if (ev.key == "ArrowUp") {
+                    let p = document.querySelector("p");
+                    p.parentNode.removeChild(p);
+                    movePlayer();
+                    draw();
+                }
+            });
+            
+            
         </script>
     </body>
 </html>
