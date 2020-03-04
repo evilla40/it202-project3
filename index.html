@@ -52,8 +52,8 @@
         </audio>
         <script>
             let canvas = document.querySelector("#c1");
-            canvas.width = document.querySelector("div").offsetWidth;
-            canvas.height = document.querySelector("div").offsetHeight;
+            canvas.width = document.querySelector("div").offsetWidth * 0.9;
+            canvas.height = document.querySelector("div").offsetHeight * 0.9;
             let canvas_context = canvas.getContext("2d");
             let player = {x:canvas.width*0.025, y:canvas.height};
             let benefit_arr = [{x:canvas.width*0.5, y:10}];
