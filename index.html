@@ -8,8 +8,8 @@
             .box {
                 display: none;
                 padding:10rem;
-                overflow: auto; /* Enable scroll if needed */
-                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+                overflow: auto;
+                background-color: rgba(0,0,0,0.4);
                 text-shadow:
                 -1px -1px 0 #FFF,
                 1px -1px 0 #FFF,
@@ -28,8 +28,12 @@
     <body style="height:100%; margin:0rem; background-color:black">
         <p class="center" style="color:white; padding:10%">In this side-scrolling game, you play as a Pokemon, Sylveon.
         Your goal is to collect as many bows as possible, collecting points, while avoiding the skulls that take away your lives.
-        Press the left and right arrows to move around.  The game is over when you lose all your hearts.
-        Press the up arrow to start the game.</p>
+        Speed, points, and lives, represented as hearts, are located on the top right.  The rate at which items
+        spawn will increase over time so beware that there will be a higher chance of colliding into skulls and reducing your lives
+        without increasing the speed of the game on your own.<br><br> Controls:<br>You can increase or decrease the speed of the
+        game with the up and down arrows which will change the speed of the game and the amount of points awarded for each bow
+        collected. Press the left and right arrows to move around.  The game is over when you lose all your hearts.<br>
+        Press the enter key to start the game.</p>
         <div style="text-align:center; width:100%; height:100%;">
             <canvas id="c1"></canvas>
         </div>
@@ -43,6 +47,9 @@
             <br>Purple Hearts: <a href="https://clipart.info/purple-heart-emoji-png-8460">https://clipart.info/purple-heart-emoji-png-8460</a>
             <br>Game Over Text: <a href="http://pngimg.com/download/83375">http://pngimg.com/download/83375</a></p>
         </div>
+        <audio autoplay loop>
+        <source src="/img/music.mp3" type="audio/mpeg">
+        </audio>
         <script>
             let canvas = document.querySelector("#c1");
             canvas.width = document.querySelector("div").offsetWidth;
@@ -53,7 +60,8 @@
             let harm_arr = [{x:10, y:10}]
             let lives = 5;
             let count = 0;
-            let speed = 150;
+            let speed = 50;
+            let difficulty = 1;
             let imgL = new Image();
             let imgR = new Image();
             let background = new Image();
@@ -76,7 +84,10 @@
             
             let img = imgR;
             let str = "Points: ";
+            let strDiff = "Speed: ";
+            let maxDiff = 30;
             let points = 0;
+            let threshold = 0;
             
 
             const draw = () => {
@@ -88,11 +99,12 @@
                 //Benefit objects
                 for(let i = 0; i < benefit_arr.length; ++i) {
                     canvas_context.drawImage(img_benefit, benefit_arr[i]["x"], benefit_arr[i]["y"], benefit_dim, benefit_dim);
-                    benefit_arr[i]["y"] += 1;
+                    benefit_arr[i]["y"] += difficulty;
                     
                     if (((benefit_arr[i]["x"] > player["x"]) || ((benefit_arr[i]["x"] + benefit_dim) > player["x"])) && (benefit_arr[i]["x"] < (player["x"]+img.width))
                        && (benefit_arr[i]["y"] < player["y"]) && ((benefit_arr[i]["y"] + benefit_dim) > (player["y"] - img.height))) {
-                        points += 1;
+                        points += difficulty;
+                        threshold = points;
                         for (let j = i; j < (benefit_arr.length - 1); ++j) {
                             benefit_arr[j] = benefit_arr[j+1];
                         }
@@ -102,7 +114,7 @@
                 //Harm objects
                 for(let i = 0; i < harm_arr.length; ++i) {
                     canvas_context.drawImage(img_harm, harm_arr[i]["x"], harm_arr[i]["y"], benefit_dim, benefit_dim);
-                    harm_arr[i]["y"] += 1;
+                    harm_arr[i]["y"] += difficulty;
                     
                     if (((harm_arr[i]["x"] > player["x"]) || (harm_arr[i]["x"] > player["x"])) && (harm_arr[i]["x"] < (player["x"]+img.width))
                        && (harm_arr[i]["y"] < player["y"]) && ((harm_arr[i]["y"]) > (player["y"] - img.height))) {
@@ -113,10 +125,14 @@
                         harm_arr.pop();
                     } 
                 }
+                //Difficulty
+                let newStrDiff = strDiff + difficulty.toString();
+                canvas_context.font = "bold 1rem sans-serif"
+                canvas_context.fillText(newStrDiff, canvas.width*0.9, canvas.height*0.05, canvas.width*0.1);
                 //Points
                 let newStr = str + points.toString();
                 canvas_context.font = "bold 1rem sans-serif"
-                canvas_context.fillText(newStr, canvas.width*0.9, canvas.height*0.1);
+                canvas_context.fillText(newStr, canvas.width*0.9, canvas.height*0.1, canvas.width*0.1);
                 //Heart lives
                 for (let i = 0; i < lives; ++i) {
                     canvas_context.drawImage(heart, canvas.width*(0.95 - (0.03*i)), canvas.height*0.125, heart_dim, heart_dim);
@@ -126,10 +142,24 @@
                 //Speed up and create more benefit and harm objects
                 count += 1;
                 if (count % speed == 0) {
-                    benefit_arr.push({x:Math.floor(Math.random() * (canvas.width - benefit_dim)), y:10});
-                    harm_arr.push({x:Math.floor(Math.random() * (canvas.width - benefit_dim)), y:10});
-                    speed -= 1;
+                        benefit_arr.push({x:Math.floor(Math.random() * (canvas.width - benefit_dim)), y:10});
                 }
+                if (count % (speed*1.5) == 0) {
+                    let random = Math.floor(Math.random() * 2);
+                    if (random == 1) {
+                        if (threshold >= 30) {
+                            if (speed-1 > 10) {
+                                speed -= 1;
+                            }
+                            threshold -= 30;
+                        }
+                        harm_arr.push({x:Math.floor(Math.random() * (canvas.width - benefit_dim)), y:10});
+                        if (speed > maxDiff) {
+                            speed -= 1;
+                        }
+                    }
+                }
+         
                 if (lives > 0) {
                     window.requestAnimationFrame(draw);
                 }
@@ -141,23 +171,44 @@
             const movePlayer = () => {
                 document.addEventListener('keydown', (e) => {
                     if (e.key == "ArrowRight") {
-                        player["x"] += canvas.width*0.01;
+                        player["x"] += (canvas.width*0.01)+(difficulty*2);
                         img = imgR;
-                        console.log("R")
+                        if ((player["x"]+(imgR.width/2)) >= canvas.width) {
+                            player["x"] = 0 - (imgR.width/2);
+                        }
                     }
                     if (e.key == "ArrowLeft") {
-                        player["x"] -= canvas.width*0.01;
+                        player["x"] -= (canvas.width*0.01)+(difficulty*2);
                         img = imgL;
-                        console.log("L")
+                        if (player["x"] <= (0 - (imgR.width/2))) {
+                            player["x"] = canvas.width - (imgR.width/2);
+                        }
                     }
                 })
             }
-            document.addEventListener('keydown', (ev) => {
-                if (ev.key == "ArrowUp") {
+            document.addEventListener('keydown', (e) => {
+                if (e.key == "Enter") {
                     let p = document.querySelector("p");
                     p.parentNode.removeChild(p);
                     movePlayer();
                     draw();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key == "ArrowUp") {
+                    if (difficulty < maxDiff) {
+                        difficulty += 1;
+                    }
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key == "ArrowDown") {
+                    if (difficulty > 1) {
+                        difficulty -= 1;
+                        //if (speed + 1 < 50) {
+                        //    speed += 1;
+                        //}
+                    }
                 }
             });
             
